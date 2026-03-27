@@ -1,10 +1,12 @@
 var express = require("express");
 var router = express.Router();
+let path = require('path');
 let { checkLogin, CheckPermission } = require('../utils/authHandler')
 let { userCreateValidator
     , userUpdateValidator
     , handleResultValidator } = require('../utils/validatorHandler')
 let userController = require("../controllers/users");
+let { uploadExcel } = require('../utils/upload');
 
 
 router.get("/", checkLogin, CheckPermission("ADMIN")
@@ -89,5 +91,27 @@ router.delete("/:id", async function (req, res, next) {
         res.status(400).send({ message: err.message });
     }
 });
+
+// Import users từ file Excel
+router.post("/import", checkLogin, CheckPermission("ADMIN"),
+    uploadExcel.single('file'),
+    async function (req, res, next) {
+        try {
+            if (!req.file) {
+                return res.status(400).send({ message: 'Vui lòng upload file Excel (.xlsx)' });
+            }
+            const filePath = path.join(__dirname, '..', req.file.path);
+            const results = await userController.ImportUsers(filePath);
+            const success = results.filter(r => r.status === 'success').length;
+            const failed = results.filter(r => r.status === 'failed').length;
+            res.send({
+                message: `Import hoàn tất: ${success} thành công, ${failed} thất bại`,
+                details: results
+            });
+        } catch (err) {
+            res.status(500).send({ message: err.message });
+        }
+    }
+);
 
 module.exports = router;
