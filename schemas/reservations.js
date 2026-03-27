@@ -41,7 +41,7 @@ let cartSchema = new mongoose.Schema({
     expiredIn: Date,
     Amount: {
         type: Number,
-        min: 1
+        min: 0
     }
 })
 module.exports = new mongoose.model('reservation', cartSchema)

@@ -10,7 +10,8 @@ let inventorySchema = mongoose.Schema({
         type: Number,
         default: 0,
         min: 0
-    }, reserved: {
+    },
+     reserved: {
         type: Number,
         default: 0,
         min: 0
